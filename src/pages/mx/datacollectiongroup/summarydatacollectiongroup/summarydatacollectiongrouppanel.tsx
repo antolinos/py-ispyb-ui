@@ -5,6 +5,8 @@ import { getDiffrationThumbnail, getCrystalImage, getDozorPlot } from 'api/ispyb
 import ZoomImage from 'components/image/zoomimage';
 import FirstSection from 'pages/mx/datacollectiongroup/summarydatacollectiongroup/firstsection';
 import SecondSection from 'pages/mx/datacollectiongroup/summarydatacollectiongroup/secondsection';
+import ThirdSection from 'pages/mx/datacollectiongroup/summarydatacollectiongroup/thirdsection';
+import UI from 'config/ui';
 
 export interface Props {
   proposalName: string;
@@ -15,23 +17,30 @@ export default function SummaryDataCollectionGroupPanel({ proposalName, dataColl
   return (
     <Container fluid>
       <Row>
-        <Col sm={12} md={2}>
+        <Col xs={12} sm={6} md={'auto'}>
           <FirstSection dataCollectionGroup={dataCollectionGroup}></FirstSection>
         </Col>
-        <Col>
-          {' '}
+        <Col xs={12} sm={6} md={'auto'}>
           <SecondSection dataCollectionGroup={dataCollectionGroup}></SecondSection>
         </Col>
-        <Col>To be implemented</Col>
-        <Col>
+        <Col xs={12} sm={12} md={'auto'}>
+          <ThirdSection dataCollectionGroup={dataCollectionGroup}></ThirdSection>
+        </Col>
+        <Col xs={12} sm={6} md={true}>
           <ZoomImage alt="Diffraction" src={getDiffrationThumbnail({ proposalName, imageId: dataCollectionGroup.firstImageId }).url}></ZoomImage>
         </Col>
-        <Col>
+        <Col xs={12} sm={6} md={true}>
           <ZoomImage alt="Crystal" src={getCrystalImage({ proposalName, dataCollectionId: dataCollectionGroup.DataCollection_dataCollectionId, imageIndex: 1 }).url}></ZoomImage>
         </Col>
-        <Col>
-          <ZoomImage alt="Dozor" src={getDozorPlot({ proposalName, dataCollectionId: dataCollectionGroup.DataCollection_dataCollectionId }).url}></ZoomImage>
-        </Col>
+        {UI.MX.showQualityIndicatorPlot && (
+          <Col xs={12} sm={6} md={true}>
+            <ZoomImage alt="Dozor" src={getDozorPlot({ proposalName, dataCollectionId: dataCollectionGroup.DataCollection_dataCollectionId }).url}></ZoomImage>
+          </Col>
+        )}
+      </Row>
+      <Row>
+        <h6>Comments</h6>
+        <p>{dataCollectionGroup.DataCollectionGroup_comments}</p>
       </Row>
     </Container>
   );

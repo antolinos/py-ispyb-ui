@@ -9,18 +9,23 @@ import {
   getSessionById,
   getEMDataCollectionsBy,
   getEMStatisticsBy,
+  getMxDataCollectionsByGroupId,
+  getMxWorkflow,
 } from 'api/ispyb';
+import { WorkflowStep } from 'pages/mx/model';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-function doGet(url: string, suspense = true) {
-  const { data, error } = useSWR(url, fetcher, { suspense: suspense });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function doGet<T = any>(url: string, suspense = true) {
+  const { data, error } = useSWR<T>(url, fetcher, { suspense: suspense });
   return {
     data,
     isLoading: !error && !data,
     isError: error,
   };
 }
+
 interface UseSession {
   startDate?: string;
   endDate?: string;
@@ -57,6 +62,13 @@ export function useEMDataCollectionsBy({ proposalName, sessionId }: ProposalSess
 
 export function useMXDataCollectionsBy({ proposalName, sessionId }: ProposalSessionId) {
   return doGet(getMXDataCollectionsBy({ proposalName, sessionId }).url);
+}
+export function useMxDataCollectionsByGroupId({ proposalName, dataCollectionGroupId }: { proposalName: string; dataCollectionGroupId: string }) {
+  return doGet(getMxDataCollectionsByGroupId({ proposalName, dataCollectionGroupId }).url);
+}
+
+export function useMxWorkflow({ proposalName, stepId }: { proposalName: string; stepId: string }) {
+  return doGet<WorkflowStep>(getMxWorkflow({ proposalName, stepId }).url);
 }
 
 export function useEMStatistics({ proposalName, sessionId }: ProposalSessionId) {
