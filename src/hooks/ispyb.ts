@@ -13,8 +13,11 @@ import {
   getMxWorkflow,
   getProposals,
   getEMStatisticsBy,
+  getMXContainers,
+  getMXEnergyScans,
+  getMXFluorescenceSpectras,
 } from 'api/ispyb';
-import { WorkflowStep } from 'pages/mx/model';
+import { EnergyScan, WorkflowStep, FluorescenceSpectra, Sample, DataCollectionGroup } from 'pages/mx/model';
 
 import { Proposal } from 'pages/model';
 
@@ -75,14 +78,25 @@ export function useEMDataCollectionsBy({ proposalName, sessionId }: ProposalSess
 }
 
 export function useMXDataCollectionsBy({ proposalName, sessionId }: ProposalSessionId) {
-  return doGet(getMXDataCollectionsBy({ proposalName, sessionId }).url);
+  return doGet<DataCollectionGroup[]>(getMXDataCollectionsBy({ proposalName, sessionId }).url);
 }
 export function useMxDataCollectionsByGroupId({ proposalName, dataCollectionGroupId }: { proposalName: string; dataCollectionGroupId: string }) {
   return doGet(getMxDataCollectionsByGroupId({ proposalName, dataCollectionGroupId }).url);
 }
 
+export function useMXEnergyScans({ proposalName, sessionId }: { proposalName: string; sessionId: string }) {
+  return doGet<EnergyScan[]>(getMXEnergyScans({ proposalName, sessionId }).url);
+}
+export function useMXFluorescenceSpectras({ proposalName, sessionId }: { proposalName: string; sessionId: string }) {
+  return doGet<FluorescenceSpectra[]>(getMXFluorescenceSpectras({ proposalName, sessionId }).url);
+}
+
 export function useMxWorkflow({ proposalName, stepId }: { proposalName: string; stepId: string }) {
   return doGet<WorkflowStep>(getMxWorkflow({ proposalName, stepId }).url);
+}
+
+export function useMXContainers({ proposalName, containerIds }: { proposalName: string; containerIds: string[] }) {
+  return doGet<Sample[]>(getMXContainers({ proposalName, containerIds }).url);
 }
 
 export function useEMStatistics({ proposalName, sessionId }: ProposalSessionId) {
