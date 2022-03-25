@@ -1,12 +1,15 @@
 /********************************************
  * Site: this model descript config/site.js
  /******************************************/
-interface Beamline {
+export type sampleChangerType = 'FlexHCDDual' | 'FlexHCDUnipuckPlate';
+export type containerType = 'Spinepuck' | 'Unipuck';
+
+export interface Beamline {
   name: string;
-  sampleChangerType: string;
+  sampleChangerType?: sampleChangerType;
 }
 
-interface Technique {
+export interface Technique {
   beamlines: Array<Beamline>;
 }
 
@@ -39,6 +42,8 @@ export interface Site {
   authentication: Authentication;
   server: string;
   name: string;
+  description: string;
+  icon: string;
 }
 /********************************************
  * User 

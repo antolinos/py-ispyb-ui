@@ -21,15 +21,46 @@ export function getSessions({ startDate, endDate }: { startDate?: string; endDat
   return { url: `${server}/${token}/session/list` };
 }
 
+export function getProposalSessions(proposalName: string) {
+  return { url: `${server}/${token}/proposal/${proposalName}/session/list` };
+}
+
 export function getProposal(proposalName?: string) {
   return { url: `${server}/${token}/proposal/${proposalName}/info/get` };
+}
+
+export function getProposals() {
+  return { url: `${server}/${token}/proposal/list` };
 }
 
 export function getSessionById(sessionId: string | undefined) {
   return { url: `${server}/${token}/proposal/session/${sessionId}/list` };
 }
 
-export function getDataCollectionsBy({ proposalName, sessionId }: { proposalName: string; sessionId?: string }) {
+export function getMXDataCollectionsBy({ proposalName, sessionId }: { proposalName: string; sessionId?: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/datacollection/session/${sessionId}/list` };
+}
+
+export function getMxDataCollectionsByGroupId({ proposalName, dataCollectionGroupId }: { proposalName: string; dataCollectionGroupId: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/datacollection/datacollectiongroupid/${dataCollectionGroupId}/list` };
+}
+
+export function getMXEnergyScans({ proposalName, sessionId }: { proposalName: string; sessionId: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/energyscan/session/${sessionId}/list` };
+}
+export function getMXFluorescenceSpectras({ proposalName, sessionId }: { proposalName: string; sessionId: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/xrfscan/session/${sessionId}/list` };
+}
+
+export function getMxWorkflow({ proposalName, stepId }: { proposalName: string; stepId: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/workflow/step/${stepId}/result` };
+}
+
+export function getMXContainers({ proposalName, containerIds }: { proposalName: string; containerIds: string[] }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/sample/containerid/${containerIds.join(',')}/list` };
+}
+
+export function getEMDataCollectionsBy({ proposalName, sessionId }: { proposalName: string; sessionId?: string }) {
   return { url: `${server}/${token}/proposal/${proposalName}/em/datacollection/session/${sessionId}/list` };
 }
 
@@ -39,6 +70,10 @@ export function getCrystalImage({ proposalName, dataCollectionId, imageIndex }: 
 
 export function getEMStatisticsBy({ proposalName, sessionId }: { proposalName: string; sessionId?: string }) {
   return { url: `${server}/${token}/proposal/${proposalName}/em/session/${sessionId}/stats` };
+}
+
+export function getEMClassificationBy({ proposalName, sessionId }: { proposalName: string; sessionId?: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/em/session/${sessionId}/classification` };
 }
 
 export function getEmMoviesByDataCollectionId({ dataCollectionId, proposalName }: { proposalName: string; dataCollectionId: number }) {
@@ -57,4 +92,35 @@ export function getMotionCorrectionThumbnail({ proposalName, dataCollectionId, m
 }
 export function getMovieThumbnail({ proposalName, dataCollectionId, movieId }: { proposalName: string; dataCollectionId: number; movieId: number }) {
   return { url: `${server}/${token}/proposal/${proposalName}/em/datacollection/${dataCollectionId}/movie/${movieId}/thumbnail` };
+}
+
+export function getClassificationThumbnail({ proposalName, particleClassificationId }: { proposalName: string; particleClassificationId: number }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/em/classification/${particleClassificationId}/thumbnail` };
+}
+
+export function getDiffrationThumbnail({ proposalName, imageId }: { proposalName: string; imageId: number }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/image/${imageId}/thumbnail` };
+}
+
+export function getDozorPlot({ dataCollectionId, proposalName }: { proposalName: string; dataCollectionId: number }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/datacollection/${dataCollectionId}/qualityindicatorplot` };
+}
+
+export function getJpegchooch({ energyscanId, proposalName }: { proposalName: string; energyscanId: number }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/energyscan/energyscanId/${energyscanId}/jpegchooch` };
+}
+
+export function getJpegxrfscan({ proposalName, xfeFluorescenceSpectrumId }: { proposalName: string; xfeFluorescenceSpectrumId: number }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/xrfscan/xrfscanId/${xfeFluorescenceSpectrumId}/image/jpegScanFileFullPath/get` };
+}
+export function getWorkflowImage({ stepId, proposalName }: { proposalName: string; stepId: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/workflow/step/${stepId}/image` };
+}
+
+export function getDewars({ proposalName }: { proposalName: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/dewar/list` };
+}
+
+export function updateShippingStatus({ proposalName, shippingId, status }: { proposalName: string; shippingId: number; status: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/shipping/${shippingId}/status/${status}/update` };
 }

@@ -1,5 +1,5 @@
 const UI = {
-  theme: 'flatly', //(examples: darkly, slate, cosmo, spacelab, and superhero, minty, flatly. See https://bootswatch.com/ for current theme names.
+  theme: 'cosmo', //(examples: darkly, slate, cosmo, spacelab, and superhero, minty, flatly. See https://bootswatch.com/ for current theme names.
   sessionsPage: {
     areMXColumnsVisible: true,
     areSAXSColumnsVisible: false,
@@ -17,6 +17,15 @@ const UI = {
     /** Text displayed on top of the username sigin form. Someone can customize the text as: User office account, ESRF Account, Umbrella account, etc... */
     usernameLabel: 'Username',
     ssoBtnLabel: 'Sign in with ESRF SSO',
+  },
+
+  MX: {
+    showQualityIndicatorPlot: true, // It shows or hides the quality indicator plot from the summary tab of a datacollection
+    showCollectionTab: true,
+    showCrystalSnapshot1: true,
+    showCrystalSnapshot2: true,
+    showCrystalSnapshot3: true,
+    showCrystalSnapshot4: true,
   },
 };
 

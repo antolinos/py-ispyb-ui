@@ -1,10 +1,11 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { getMovieThumbnail, getMotionCorrectionDrift, getMotionCorrectionThumbnail, getCTFThumbnail } from 'api/ispyb';
 import ZoomImage from 'components/image/zoomimage';
 import SimpleParameterTable from 'components/table/simpleparametertable';
 import { convertToFixed, expo } from 'helpers/numerictransformation';
 import { Movie } from 'pages/em/model';
+import { isMotionThreshold, isResolutionLimitThreshold } from 'pages/em/movie/helper';
 
 interface Props {
   movie: Movie;
@@ -35,9 +36,27 @@ export default function MoviePanel(props: Props) {
             parameters={[
               { key: 'Number', value: movie.Movie_movieNumber },
               { key: 'Time', value: movie.Movie_createdTimeStamp },
-              { key: 'Movie File Name', value: movie.Movie_fileName },
-              { key: 'Average motion/frame', value: movie.MotionCorrection_averageMotionPerFrame },
-              { key: 'Resolution', value: movie.CTF_resolutionLimit },
+              { key: 'Movie File Name', value: movie.Movie_fileName, valueTooltip: movie.Movie_movieFullPath },
+            ]}
+          ></SimpleParameterTable>
+          <SimpleParameterTable
+            header="Position"
+            parameters={[
+              { key: 'X', value: expo(movie.Movie_positionX, 3) },
+              { key: 'Y', value: expo(movie.Movie_positionY, 3) },
+            ]}
+          ></SimpleParameterTable>
+        </Col>
+
+        <Col xs={2}>
+          <SimpleParameterTable
+            header="Motion Correction"
+            parameters={[
+              { key: 'Total Motion', value: movie.MotionCorrection_totalMotion, className: isMotionThreshold(movie) ? 'text-danger' : '' },
+              { key: 'Avg. Motion/frame', value: movie.MotionCorrection_averageMotionPerFrame },
+              { key: 'Frame Range', value: movie.MotionCorrection_lastFrame },
+              { key: 'Dose/frame', value: movie.MotionCorrection_dosePerFrame },
+              { key: 'Total dose', value: movie.Movie_dosePerImage },
             ]}
           ></SimpleParameterTable>
         </Col>
@@ -65,31 +84,11 @@ export default function MoviePanel(props: Props) {
             />
           </div>
         </Col>
-
-        <Col xs={2}>
-          <SimpleParameterTable
-            header="Motion Correction"
-            parameters={[
-              { key: 'X', value: expo(movie.Movie_positionX, 3) },
-              { key: 'Y', value: expo(movie.Movie_positionY, 3) },
-            ]}
-          ></SimpleParameterTable>
-          <SimpleParameterTable
-            header="Motion Correction"
-            parameters={[
-              { key: 'Total Motion', value: movie.MotionCorrection_totalMotion, className: parseFloat(movie.MotionCorrection_totalMotion) > 1000 ? 'text-danger' : '' },
-              { key: 'Avg. Motion/frame', value: movie.MotionCorrection_averageMotionPerFrame },
-              { key: 'Frame Range', value: movie.MotionCorrection_lastFrame },
-              { key: 'Dose', value: movie.MotionCorrection_dosePerFrame },
-            ]}
-          ></SimpleParameterTable>
-        </Col>
-
         <Col xs={2}>
           <SimpleParameterTable
             header="CTF Results"
             parameters={[
-              { key: 'Resolution Limit:', value: convertToFixed(movie.CTF_resolutionLimit, 2), className: parseFloat(movie.CTF_resolutionLimit) > 5 ? 'text-danger' : '' },
+              { key: 'Resolution Limit:', value: convertToFixed(movie.CTF_resolutionLimit, 2), className: isResolutionLimitThreshold(movie) ? 'text-danger' : '' },
               { key: 'Correlation', value: convertToFixed(movie.CTF_crossCorrelationCoefficient, 3) },
               { key: 'Defocus U', value: convertToFixed(movie.CTF_defocusU, 0) },
               { key: 'Defocus V', value: convertToFixed(movie.CTF_defocusV, 0) },
