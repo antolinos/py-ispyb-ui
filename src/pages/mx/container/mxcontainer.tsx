@@ -1,13 +1,105 @@
 import SimpleParameterTable from 'components/table/simpleparametertable';
+import { getContainerType } from 'helpers/mx/samplehelper';
 import { useMXContainers } from 'hooks/ispyb';
 import _ from 'lodash';
 import { range } from 'lodash';
+import { containerType } from 'models';
 import { PropsWithChildren } from 'react';
 import { Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Sample } from '../model';
 import './mxcontainer.scss';
 
 const containerRadius = 75;
+
+export function MXContainer({
+  proposalName,
+  sessionId,
+  containerId,
+  containerType,
+  removeSelectedGroups = () => undefined,
+  addSelectedGroups = () => undefined,
+  selectedGroups = [],
+  showInfo = true,
+}: {
+  proposalName: string;
+  sessionId?: string;
+  containerId: string;
+  containerType?: containerType;
+  selectedGroups?: number[];
+  showInfo?: boolean;
+  // eslint-disable-next-line no-unused-vars
+  removeSelectedGroups?: (ids: number[]) => void;
+  // eslint-disable-next-line no-unused-vars
+  addSelectedGroups?: (ids: number[]) => void;
+}) {
+  const { data: samples, isError: isErrorContainer } = useMXContainers({ proposalName, containerIds: [containerId] });
+  if (isErrorContainer) throw Error(isErrorContainer);
+  const sampleByPosition = _(samples)
+    .groupBy((s) => s.BLSample_location)
+    .value();
+
+  const type = findContainerType(containerType, samples, sampleByPosition);
+  if (type) {
+    const svg = (
+      <ContainerSVG maxPosition={type.maxPos}>
+        {range(1, type.maxPos + 1).map((n) => {
+          const position = type.computePos(n);
+
+          const sampleArray = sampleByPosition[String(n)];
+
+          let collected: 0 | Sample[] = sampleArray;
+
+          if (sessionId) {
+            collected = sampleArray && sampleArray.length && sampleArray.filter((s) => Number(sessionId) == s?.sessionId);
+          }
+          const collectionIds = collected && collected.length && collected.map((s) => s.DataCollectionGroup_dataCollectionGroupId).filter((id) => id);
+          const selected =
+            collectionIds &&
+            collectionIds.length &&
+            _(collectionIds)
+              .map((i) => selectedGroups.includes(i))
+              .reduce((a, b) => a && b, true);
+
+          const refSample = collected && collected.length ? collected[0] : sampleArray && sampleArray.length ? sampleArray[0] : undefined;
+
+          const onClick = () => {
+            if (collectionIds) {
+              selected ? removeSelectedGroups(collectionIds) : addSelectedGroups(collectionIds);
+            }
+          };
+
+          return (
+            <SampleSVG
+              position={position}
+              n={n}
+              refSample={refSample}
+              collected={Boolean(collected && collected.length)}
+              selected={Boolean(selected)}
+              onClick={onClick}
+            ></SampleSVG>
+          );
+        })}
+      </ContainerSVG>
+    );
+    if (!showInfo) {
+      return svg;
+    }
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {svg}
+        <div>
+          <SimpleParameterTable
+            parameters={[
+              { key: 'Container', value: samples && samples.length ? samples[0].Container_code : 'unknown' },
+              { key: 'Location', value: samples && samples.length ? samples[0].Container_sampleChangerLocation : 'unknown' },
+            ]}
+          ></SimpleParameterTable>
+        </div>
+      </div>
+    );
+  }
+  return <></>;
+}
 
 function computePos(radiusRatio: number, maxPosition: number, position: number): { x: number | string; y: number | string } {
   const radius = radiusRatio * containerRadius;
@@ -24,6 +116,7 @@ const containerTypes = {
       return computePos(0.76, 10, position);
     },
     maxPos: 10,
+    name: 'Spinepuck',
   },
   Unipuck: {
     computePos: (position: number) => {
@@ -33,14 +126,15 @@ const containerTypes = {
       return computePos(0.76, 11, position - 5);
     },
     maxPos: 16,
+    name: 'Unipuck',
   },
 };
 
-function getContainerType(type: string | undefined) {
+export function getContainerTypePositions(type: containerType) {
   if (type === 'Unipuck') {
     return containerTypes.Unipuck;
   }
-  if (type === 'Spinepuck' || type === 'Puck') {
+  if (type === 'Spinepuck') {
     return containerTypes.Spinepuck;
   }
   return undefined;
@@ -63,106 +157,29 @@ function findContainerType(typeParam: string | undefined, samples: Sample[] | un
     } else {
       maxPosition = 16;
     }
-    type = maxPosition == 10 ? containerTypes.Spinepuck : containerTypes.Unipuck;
+    type = maxPosition == 10 ? 'Spinepuck' : 'Unipuck';
   }
   if (type == undefined) {
-    //Default type Unipuck
-    return containerTypes.Spinepuck;
+    return undefined;
   } else {
-    return type;
+    return getContainerTypePositions(type);
   }
 }
 
-export function MXContainer({
-  proposalName,
-  sessionId,
-  containerId,
-  containerType,
-  removeSelectedGroups = () => undefined,
-  addSelectedGroups = () => undefined,
-  selectedGroups = [],
-  showInfo = true,
-}: {
-  proposalName: string;
-  sessionId?: string;
-  containerId: string;
-  containerType?: string;
-  selectedGroups?: number[];
-  showInfo?: boolean;
-  // eslint-disable-next-line no-unused-vars
-  removeSelectedGroups?: (ids: number[]) => void;
-  // eslint-disable-next-line no-unused-vars
-  addSelectedGroups?: (ids: number[]) => void;
-}) {
-  const { data: samples, isError: isErrorContainer } = useMXContainers({ proposalName, containerIds: [containerId] });
-  if (isErrorContainer) throw Error(isErrorContainer);
-  const sampleByPosition = _(samples)
-    .groupBy((s) => s.BLSample_location)
-    .value();
+export function EmptyContainer({ containerType }: { containerType: containerType }) {
+  const type = getContainerTypePositions(containerType);
+  if (type) {
+    return (
+      <ContainerSVG maxPosition={type.maxPos}>
+        {range(1, type.maxPos + 1).map((n) => {
+          const position = type.computePos(n);
 
-  const type = findContainerType(containerType, samples, sampleByPosition);
-  const svg = (
-    <ContainerSVG maxPosition={type.maxPos}>
-      {range(1, type.maxPos + 1).map((n) => {
-        const position = type.computePos(n);
-
-        const sampleArray = sampleByPosition[String(n)];
-
-        let collected: 0 | Sample[] = sampleArray;
-
-        if (sessionId) {
-          collected = sampleArray && sampleArray.length && sampleArray.filter((s) => Number(sessionId) == s?.sessionId);
-        }
-        const collectionIds = collected && collected.length && collected.map((s) => s.DataCollectionGroup_dataCollectionGroupId).filter((id) => id);
-        const selected =
-          collectionIds &&
-          collectionIds.length &&
-          _(collectionIds)
-            .map((i) => selectedGroups.includes(i))
-            .reduce((a, b) => a && b, true);
-
-        const refSample = collected && collected.length ? collected[0] : sampleArray && sampleArray.length ? sampleArray[0] : undefined;
-
-        const onClick = () => {
-          if (collectionIds) {
-            selected ? removeSelectedGroups(collectionIds) : addSelectedGroups(collectionIds);
-          }
-        };
-
-        return (
-          <SampleSVG position={position} n={n} refSample={refSample} collected={Boolean(collected && collected.length)} selected={Boolean(selected)} onClick={onClick}></SampleSVG>
-        );
-      })}
-    </ContainerSVG>
-  );
-  if (!showInfo) {
-    return svg;
+          return <SampleSVG position={position} n={n} collected={false} selected={false} onClick={() => undefined}></SampleSVG>;
+        })}
+      </ContainerSVG>
+    );
   }
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {svg}
-      <div>
-        <SimpleParameterTable
-          parameters={[
-            { key: 'Container', value: samples && samples.length ? samples[0].Container_code : 'unknown' },
-            { key: 'Location', value: samples && samples.length ? samples[0].Container_sampleChangerLocation : 'unknown' },
-          ]}
-        ></SimpleParameterTable>
-      </div>
-    </div>
-  );
-}
-
-export function EmptyContainer() {
-  return (
-    <ContainerSVG maxPosition={16}>
-      {range(1, 17).map((n) => {
-        const position = containerTypes.Unipuck.computePos(n);
-
-        return <SampleSVG position={position} n={n} collected={false} selected={false} onClick={() => undefined}></SampleSVG>;
-      })}
-    </ContainerSVG>
-  );
+  return <></>;
 }
 
 function ContainerSVG({ maxPosition, children }: PropsWithChildren<{ maxPosition: number }>) {

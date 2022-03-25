@@ -20,7 +20,7 @@ import {
 } from 'api/ispyb';
 import { EnergyScan, WorkflowStep, FluorescenceSpectra, Sample, DataCollectionGroup } from 'pages/mx/model';
 
-import { Dewar, Proposal } from 'pages/model';
+import { ContainerDewar, Proposal } from 'pages/model';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -58,9 +58,12 @@ export function useProposals() {
 }
 
 export function useSessions(props: UseSession) {
-  const { startDate, endDate, isManager, proposalName } = props;
+  const { startDate, endDate, isManager, proposalName, username } = props;
   if (proposalName) {
     return doGet(getProposalSessions(proposalName).url);
+  }
+  if (!isManager && username) {
+    return doGet(getProposalSessions(username).url);
   }
   if (isManager && (!startDate || !endDate)) {
     return { data: undefined, isError: 'Manager mush provide start and end dates' }; //would be too heavy
@@ -114,5 +117,5 @@ export function useEMClassification({ proposalName, sessionId }: ProposalSession
 }
 
 export function useDewars({ proposalName }: { proposalName: string }) {
-  return doGet<Dewar[]>(getDewars({ proposalName }).url);
+  return doGet<ContainerDewar[]>(getDewars({ proposalName }).url);
 }

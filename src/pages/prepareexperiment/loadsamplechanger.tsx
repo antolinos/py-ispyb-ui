@@ -1,147 +1,116 @@
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import LoadingPanel from 'components/loading/loadingpanel';
-import { Dewar } from 'pages/model';
-import { MXContainer } from 'pages/mx/container/mxcontainer';
-import { Suspense, useState } from 'react';
-import { Button, Card, Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
-import BootstrapTable, { ColumnDescription } from 'react-bootstrap-table-next';
-import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
-import paginationFactory from 'react-bootstrap-table2-paginator';
+import { ContainerDewar } from 'pages/model';
+import { Card } from 'react-bootstrap';
 
 import './loadsamplechanger.scss';
-import SampleChanger from './samplechanger';
 
-export default function LoadSampleChanger({ dewars, proposalName }: { dewars?: Dewar[]; proposalName: string }) {
-  const [container, setContainer] = useState<Dewar | undefined>(undefined);
+import { useBeamlinesObjects } from 'hooks/site';
+import DnDLoadSampleChanger from './dndloadsamplechanger';
+
+export default function LoadSampleChanger({
+  dewars,
+  proposalName,
+  setContainerPosition,
+}: {
+  dewars?: ContainerDewar[];
+  proposalName: string;
+  // eslint-disable-next-line no-unused-vars
+  setContainerPosition: (containerId: number, beamline: string, position: string) => void;
+}) {
+  const beamlines = useBeamlinesObjects('MX');
+
   return (
     <Card>
-      <Card.Header>Load sample changer</Card.Header>
-      <Card.Body>{dewars ? <ContainerTable selected={container} dewars={dewars} setContainer={setContainer}></ContainerTable> : 'You must select a shipment first'}</Card.Body>
+      <Card.Header>2. Load sample changer</Card.Header>
       <Card.Body>
-        {container ? (
-          <Suspense fallback={<LoadingPanel></LoadingPanel>}>
-            <Row>
-              <Col>
-                <Row>
-                  <h5 style={{ textAlign: 'center' }}>Placing sample: </h5>
-                </Row>
-                <Row>
-                  <div style={{ maxWidth: 200, margin: 'auto' }}>
-                    <MXContainer containerType={container.containerType} proposalName={proposalName} containerId={String(container.containerId)}></MXContainer>
-                  </div>
-                </Row>
-              </Col>
-              <Col>
-                <Row>
-                  <div style={{ maxWidth: 400, margin: 'auto' }}>
-                    <SampleChanger proposalName={proposalName} beamline={container.beamlineLocation} containers={dewars}></SampleChanger>
-                  </div>
-                </Row>
-              </Col>
-            </Row>{' '}
-          </Suspense>
-        ) : (
-          'You must select a shipment first'
-        )}
+        <DnDLoadSampleChanger beamlines={beamlines} setContainerPosition={setContainerPosition} proposalName={proposalName} dewars={dewars}></DnDLoadSampleChanger>
       </Card.Body>
     </Card>
   );
 }
 
-// eslint-disable-next-line no-unused-vars
-export function ContainerTable({ dewars, setContainer, selected }: { dewars: Dewar[]; setContainer: (c: Dewar) => void; selected?: Dewar }) {
-  const columns: ColumnDescription<Dewar>[] = [
-    { text: 'id', dataField: 'containerId', hidden: true },
-    {
-      text: 'Shipment',
-      dataField: 'shippingName',
-      filter: textFilter({
-        placeholder: 'Search...',
-      }),
-    },
-    {
-      text: 'Container',
-      dataField: 'containerCode',
-      filter: textFilter({
-        placeholder: 'Search...',
-      }),
-    },
-    {
-      text: 'Type',
-      dataField: 'containerType',
-      filter: textFilter({
-        placeholder: 'Search...',
-      }),
-    },
-    {
-      text: 'Beamline',
-      dataField: 'beamlineLocation',
-      filter: textFilter({
-        placeholder: 'Search...',
-      }),
-    },
-    {
-      text: 'Position',
-      dataField: 'sampleChangerLocation',
-      formatter: (cell) => {
-        if (!cell) {
-          return '';
-        }
-        if (isNaN(cell)) {
-          return cell;
-        }
-        return `${Math.floor(cell / 3) + 1} - ${cell % 3}`;
-      },
-      hidden: false,
-    },
-    {
-      text: '',
-      dataField: 'shippingId',
-      formatter: (cell, row) => {
-        return <SelectContainer container={row} setContainer={setContainer}></SelectContainer>;
-      },
-      headerStyle: { width: 40 },
-      style: { verticalAlign: 'middle', textAlign: 'center' },
-    },
-  ];
+// // eslint-disable-next-line no-unused-vars
+// export function ContainerTable({ dewars, setContainer, selected }: { dewars: Dewar[]; setContainer: (c: Dewar) => void; selected?: Dewar }) {
+//   const columns: ColumnDescription<Dewar>[] = [
+//     { text: 'id', dataField: 'containerId', hidden: true },
+//     {
+//       text: 'Shipment',
+//       dataField: 'shippingName',
+//       filter: textFilter({
+//         placeholder: 'Search...',
+//       }),
+//     },
+//     {
+//       text: 'Container',
+//       dataField: 'containerCode',
+//       filter: textFilter({
+//         placeholder: 'Search...',
+//       }),
+//     },
+//     {
+//       text: 'Type',
+//       dataField: 'containerType',
+//       filter: textFilter({
+//         placeholder: 'Search...',
+//       }),
+//     },
+//     {
+//       text: 'Beamline',
+//       dataField: 'beamlineLocation',
+//       filter: textFilter({
+//         placeholder: 'Search...',
+//       }),
+//     },
+//     {
+//       text: 'Cell',
+//       dataField: 'sampleChangerLocation',
+//       formatter: (cell) => {
+//         if (!cell || isNaN(Number(cell))) {
+//           return '';
+//         }
+//         return `${Math.floor(Number(cell) / 3) + 1}`;
+//       },
+//       hidden: false,
+//     },
+//     {
+//       text: 'Position',
+//       dataField: 'sampleChangerLocation',
+//       formatter: (cell) => {
+//         if (!cell || isNaN(Number(cell))) {
+//           return '';
+//         }
+//         return `${Number(cell) % 3}`;
+//       },
+//       hidden: false,
+//     },
+//     {
+//       text: '',
+//       dataField: 'shippingId',
+//       formatter: (cell, row) => {
+//         return <SelectContainer container={row} setContainer={setContainer}></SelectContainer>;
+//       },
+//       headerStyle: { width: 40 },
+//       style: { verticalAlign: 'middle', textAlign: 'center' },
+//     },
+//   ];
 
-  return (
-    <Col>
-      <Row>
-        <BootstrapTable
-          bootstrap4
-          wrapperClasses="table-responsive"
-          keyField="Id"
-          data={dewars}
-          columns={columns}
-          condensed
-          striped
-          rowClasses={(row: Dewar) => {
-            return row.containerId == selected?.containerId ? 'selectedforplacement' : '';
-          }}
-          pagination={paginationFactory({ sizePerPage: 5, showTotal: true, hideSizePerPage: true, hidePageListOnlyOnePage: true })}
-          filter={filterFactory()}
-        />
-      </Row>
-    </Col>
-  );
-}
-
-// eslint-disable-next-line no-unused-vars
-export function SelectContainer({ container, setContainer }: { container: Dewar; setContainer: (c: Dewar) => void }) {
-  if (!['Spinepuck', 'Unipuck', 'Puck'].includes(container.containerType)) {
-    return <></>;
-  }
-
-  const onClick = () => {
-    setContainer(container);
-  };
-  return (
-    <OverlayTrigger placement="right" overlay={<Tooltip>Place container</Tooltip>}>
-      <Button style={{ padding: 0 }} variant="link" onClick={onClick}>
-        <FontAwesomeIcon icon={faSearch}></FontAwesomeIcon>
-      </Button>
-    </OverlayTrigger>
-  );
-}
+//   return (
+//     <Col>
+//       <Row>
+//         <BootstrapTable
+//           bootstrap4
+//           wrapperClasses="table-responsive"
+//           keyField="Id"
+//           data={dewars}
+//           columns={columns}
+//           condensed
+//           striped
+//           rowClasses={(row: Dewar) => {
+//             return row.containerId == selected?.containerId ? 'selectedforplacement' : '';
+//           }}
+//           pagination={paginationFactory({ sizePerPage: 5, showTotal: true, hideSizePerPage: true, hidePageListOnlyOnePage: true })}
+//           filter={filterFactory()}
+//         />
+//       </Row>
+//     </Col>
+//   );
+// }

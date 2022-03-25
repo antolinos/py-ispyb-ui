@@ -33,14 +33,14 @@ const sites: Site[] = [
       EM: { beamlines: [{ name: "CM01" }] },
       MX: {
         beamlines: [
-          { name: "ID23-1", sampleChangerType: "FlexHCDDual" },
-          { name: "ID23-2", sampleChangerType: "FlexHCDUnipuckPlate" },
-          { name: "ID29", sampleChangerType: "FlexHCDDual" },
-          { name: "ID30A-1", sampleChangerType: "RoboDiffHCDSC3" },
-          { name: "ID30A-2", sampleChangerType: "FlexHCDDual" },
-          { name: "ID30A-3", sampleChangerType: "FlexHCDDual" },
-          { name: "ID30B", sampleChangerType: "FlexHCDDual" },
-          { name: "BM30A", sampleChangerType: "FlexHCDDual" },
+          { name: 'ID23-1', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID23-2', sampleChangerType: 'FlexHCDUnipuckPlate' },
+          { name: 'ID29', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID30A-1', sampleChangerType: 'FlexHCDUnipuckPlate' },
+          { name: 'ID30A-2', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID30A-3', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID30B', sampleChangerType: 'FlexHCDDual' },
+          { name: 'BM30A', sampleChangerType: 'FlexHCDDual' },
         ],
       },
     },
@@ -111,7 +111,7 @@ const sites: Site[] = [
           { name: "ID23-1", sampleChangerType: "FlexHCDDual" },
           { name: "ID23-2", sampleChangerType: "FlexHCDUnipuckPlate" },
           { name: "ID29", sampleChangerType: "FlexHCDDual" },
-          { name: "ID30A-1", sampleChangerType: "RoboDiffHCDSC3" },
+          { name: "ID30A-1", sampleChangerType: "FlexHCDUnipuckPlate" },
           { name: "ID30A-2", sampleChangerType: "FlexHCDDual" },
           { name: "ID30A-3", sampleChangerType: "FlexHCDDual" },
           { name: "ID30B", sampleChangerType: "FlexHCDDual" },
@@ -147,15 +147,15 @@ const sites: Site[] = [
         beamlines: [
           {
             name: "P13",
-            sampleChangerType: "RoboDiff",
+            
           },
           {
             name: "P14",
-            sampleChangerType: "Robodiff",
+            
           },
           {
             name: "PE2",
-            sampleChangerType: "Robodiff",
+            //sampleChangerType: "Robodiff",
           },
         ],
       },
@@ -188,8 +188,16 @@ const sites: Site[] = [
         beamlines: [
           {
             name: "BioMAX",
-            sampleChangerType: "ISARA",
+            //sampleChangerType: "ISARA",
           },
+          { name: 'ID23-1', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID23-2', sampleChangerType: 'FlexHCDUnipuckPlate' },
+          { name: 'ID29', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID30A-1', sampleChangerType: 'FlexHCDUnipuckPlate' },
+          { name: 'ID30A-2', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID30A-3', sampleChangerType: 'FlexHCDDual' },
+          { name: 'ID30B', sampleChangerType: 'FlexHCDDual' },
+          { name: 'BM30A', sampleChangerType: 'FlexHCDDual' },
         ],
       },
     },

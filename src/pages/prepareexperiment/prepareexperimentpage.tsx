@@ -1,4 +1,4 @@
-import { Button, Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
+import { Button, Card, Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import BootstrapTable, { ColumnDescription } from 'react-bootstrap-table-next';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import 'react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css';
@@ -8,7 +8,7 @@ import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 import { useDewars } from 'hooks/ispyb';
 import { useParams } from 'react-router-dom';
 import _ from 'lodash';
-import { Dewar } from 'pages/model';
+import { ContainerDewar } from 'pages/model';
 import './prepareexperimentpage.scss';
 import { formatDateTo, parseDate } from 'helpers/dateparser';
 import { faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -20,32 +20,6 @@ import produce from 'immer';
 import LoadSampleChanger from './loadsamplechanger';
 import { Shipment } from 'pages/model';
 
-const dateFormatter = (cell: string) => {
-  if (cell) {
-    return `${formatDateTo(cell, 'dd/MM/yyyy')}`;
-  }
-  return cell;
-};
-
-const shipmentIsProcessing = (s: Shipment) => {
-  return s.status && s.status.toLowerCase().includes('processing') ? 1 : 0;
-};
-
-const sortShipments = (a: Shipment, b: Shipment) => {
-  const aN = shipmentIsProcessing(a);
-  const bN = shipmentIsProcessing(b);
-  if (aN == bN) {
-    if (a.creationDate && b.creationDate) {
-      return parseDate(b.creationDate).getTime() - parseDate(a.creationDate).getTime();
-    }
-    if (a.creationDate) {
-      return -1;
-    }
-    return 1;
-  }
-  return bN - aN;
-};
-
 type Param = {
   proposalName: string;
 };
@@ -56,10 +30,26 @@ export default function PrepareExperimentPage() {
   if (isError) throw Error(isError);
   if (!data) throw Error('error while fetching dewars');
 
+  const setContainerPosition = (containerId: number, beamline: string, position: string) => {
+    mutate(
+      produce((dewarsDraft: ContainerDewar[] | undefined) => {
+        if (dewarsDraft) {
+          for (const dewarDraft of dewarsDraft) {
+            if (dewarDraft.containerId == containerId) {
+              dewarDraft.beamlineLocation = beamline;
+              dewarDraft.sampleChangerLocation = position;
+            }
+          }
+        }
+      }),
+      false
+    );
+  };
+
   const shipments = _(data)
     .groupBy((d) => d.shippingId)
-    .filter((dewars: Dewar[]) => dewars.length > 0)
-    .map((dewars: Dewar[]) => {
+    .filter((dewars: ContainerDewar[]) => dewars.length > 0)
+    .map((dewars: ContainerDewar[]) => {
       const d = dewars[0];
       const res: Shipment = { shippingId: d.shippingId, name: d.shippingName, status: d.shippingStatus, creationDate: d.creationDate, dewars: dewars };
       return res;
@@ -115,36 +105,66 @@ export default function PrepareExperimentPage() {
       <Col md={'auto'}>
         <Row>
           <div style={{ maxWidth: 550 }}>
-            <BootstrapTable
-              bootstrap4
-              wrapperClasses="table-responsive"
-              keyField="Id"
-              data={shipments.sort(sortShipments)}
-              columns={columns}
-              rowClasses={(row: Shipment) => {
-                return shipmentIsProcessing(row) ? 'processing' : '';
-              }}
-              condensed
-              striped
-              pagination={paginationFactory({ sizePerPage: 20, showTotal: true, hideSizePerPage: true, hidePageListOnlyOnePage: true })}
-              filter={filterFactory()}
-            />
+            <Card style={{ border: 'none' }}>
+              <Card.Header>1. Select shipments</Card.Header>
+              <Card.Body style={{ padding: 0 }}>
+                <BootstrapTable
+                  bootstrap4
+                  wrapperClasses="table-responsive"
+                  keyField="Id"
+                  data={shipments.sort(sortShipments)}
+                  columns={columns}
+                  rowClasses={(row: Shipment) => {
+                    return shipmentIsProcessing(row) ? 'processing' : '';
+                  }}
+                  condensed
+                  striped
+                  pagination={paginationFactory({ sizePerPage: 20, showTotal: true, hideSizePerPage: true, hidePageListOnlyOnePage: true })}
+                  filter={filterFactory()}
+                />
+              </Card.Body>
+            </Card>
           </div>
         </Row>
       </Col>
       <Col>
-        <LoadSampleChanger proposalName={proposalName} dewars={processingDewars}></LoadSampleChanger>
+        <LoadSampleChanger setContainerPosition={setContainerPosition} proposalName={proposalName} dewars={processingDewars}></LoadSampleChanger>
       </Col>
     </Row>
   );
 }
 
-export function ToggleShipmentStatus({ shipment, proposalName, mutate }: { shipment: Shipment; proposalName: string; mutate: KeyedMutator<Dewar[]> }) {
+const dateFormatter = (cell: string) => {
+  if (cell) {
+    return `${formatDateTo(cell, 'dd/MM/yyyy')}`;
+  }
+  return cell;
+};
+
+const shipmentIsProcessing = (s: Shipment) => {
+  return s.status && s.status.toLowerCase().includes('processing') ? 1 : 0;
+};
+
+const sortShipments = (a: Shipment, b: Shipment) => {
+  const aN = shipmentIsProcessing(a);
+  const bN = shipmentIsProcessing(b);
+  if (aN == bN) {
+    if (a.creationDate && b.creationDate) {
+      return parseDate(b.creationDate).getTime() - parseDate(a.creationDate).getTime();
+    }
+    if (a.creationDate) {
+      return -1;
+    }
+    return 1;
+  }
+  return bN - aN;
+};
+export function ToggleShipmentStatus({ shipment, proposalName, mutate }: { shipment: Shipment; proposalName: string; mutate: KeyedMutator<ContainerDewar[]> }) {
   const isProcessing = shipmentIsProcessing(shipment);
   const newStatus = isProcessing ? 'at_ESRF' : 'processing';
   const onClick = () => {
     mutate(
-      produce((dewarsDraft: Dewar[] | undefined) => {
+      produce((dewarsDraft: ContainerDewar[] | undefined) => {
         if (dewarsDraft) {
           for (const dewarDraft of dewarsDraft) {
             if (dewarDraft.shippingId == shipment.shippingId) {
