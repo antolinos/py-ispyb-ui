@@ -2,6 +2,7 @@ import { Site } from "models";
 
 const sites: Site[] = [
   {
+
     name: "ESRF",
     server: "https://ispyb.esrf.fr/ispyb/ispyb-ws/rest",
     description: "European Synchroton Radiation Facility",
@@ -79,6 +80,7 @@ const sites: Site[] = [
   
 
   {
+
     name: "EMBL",
     server: "https://ispyb.embl-hamburg.de/ispyb/ispyb-ws/rest",
     description: "European Molecular Biology Laboratory",
@@ -91,6 +93,7 @@ const sites: Site[] = [
         {
           plugin: "db",
           title: "ISPyB",
+
           server: "https://ispyb.embl-hamburg.de/ispyb/ispyb-ws/rest",
           enabled: true,
           site: "EMBL",
@@ -100,6 +103,7 @@ const sites: Site[] = [
     },
 
     techniques: {
+
       MX: {
         beamlines: [
           {
@@ -107,9 +111,9 @@ const sites: Site[] = [
             
           },
           {
-            name: "P14",
-            
+            name: "P14",           
           }
+
         ],
       },
     },
