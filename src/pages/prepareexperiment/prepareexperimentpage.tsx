@@ -11,39 +11,74 @@ import _ from 'lodash';
 import { ContainerDewar } from 'pages/model';
 import './prepareexperimentpage.scss';
 import { formatDateTo, parseDate } from 'helpers/dateparser';
-import { faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faAngleUp, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
-import { updateShippingStatus } from 'api/ispyb';
+import { updateSampleChangerLocation, updateShippingStatus } from 'api/ispyb';
 import { KeyedMutator } from 'swr';
 import produce from 'immer';
 import LoadSampleChanger from './loadsamplechanger';
 import { Shipment } from 'pages/model';
+import { useState } from 'react';
+import Page from 'pages/page';
 
 type Param = {
   proposalName: string;
 };
 
 export default function PrepareExperimentPage() {
+  const [compactStep1, setCompactStep1] = useState(false);
+
   const { proposalName = '' } = useParams<Param>();
   const { data, isError, mutate } = useDewars({ proposalName });
   if (isError) throw Error(isError);
   if (!data) throw Error('error while fetching dewars');
 
-  const setContainerPosition = (containerId: number, beamline: string, position: string) => {
+  const setContainerLocation = (containerId: number, beamline: string | undefined, position: string | undefined) => {
     mutate(
       produce((dewarsDraft: ContainerDewar[] | undefined) => {
         if (dewarsDraft) {
           for (const dewarDraft of dewarsDraft) {
             if (dewarDraft.containerId == containerId) {
-              dewarDraft.beamlineLocation = beamline;
-              dewarDraft.sampleChangerLocation = position;
+              if (position != undefined) {
+                dewarDraft.sampleChangerLocation = position;
+              }
+              if (beamline != undefined) {
+                dewarDraft.beamlineLocation = beamline;
+              }
             }
           }
         }
       }),
       false
     );
+    let req:
+      | {
+          url: string;
+          data: string;
+        }
+      | undefined;
+    if (beamline != undefined) {
+      req = updateSampleChangerLocation({ proposalName, containerId: containerId, beamline: beamline, position });
+    } else {
+      for (const d of data) {
+        if (d.containerId == containerId) {
+          req = updateSampleChangerLocation({ proposalName, containerId: containerId, beamline: d.beamlineLocation || 'undefined', position });
+        }
+      }
+    }
+    if (req) {
+      axios.post(req.url, req.data, { headers: { 'content-type': 'application/x-www-form-urlencoded' } }).then(
+        () => {
+          mutate();
+        },
+        () => {
+          mutate();
+        }
+      );
+    } else {
+      mutate();
+    }
   };
 
   const shipments = _(data)
@@ -100,38 +135,79 @@ export default function PrepareExperimentPage() {
     },
   ];
 
-  return (
-    <Row>
-      <Col md={'auto'}>
+  const step1 = (
+    <Card style={{ border: 'none' }}>
+      <Card.Header>
         <Row>
-          <div style={{ maxWidth: 550 }}>
-            <Card style={{ border: 'none' }}>
-              <Card.Header>1. Select shipments</Card.Header>
-              <Card.Body style={{ padding: 0 }}>
-                <BootstrapTable
-                  bootstrap4
-                  wrapperClasses="table-responsive"
-                  keyField="Id"
-                  data={shipments.sort(sortShipments)}
-                  columns={columns}
-                  rowClasses={(row: Shipment) => {
-                    return shipmentIsProcessing(row) ? 'processing' : '';
-                  }}
-                  condensed
-                  striped
-                  pagination={paginationFactory({ sizePerPage: 20, showTotal: true, hideSizePerPage: true, hidePageListOnlyOnePage: true })}
-                  filter={filterFactory()}
-                />
-              </Card.Body>
-            </Card>
-          </div>
+          <Col md={'auto'}>
+            <h6 style={{ margin: 5 }}>1. Select shipments</h6>
+          </Col>
+          <Col></Col>
+          <Col md={'auto'}>
+            <OverlayTrigger key={'right'} placement={'right'} overlay={<Tooltip id={`tooltip-right`}>{compactStep1 ? 'Expand' : 'Minify'}</Tooltip>}>
+              <Button
+                style={{ paddingTop: 0, paddingBottom: 0 }}
+                variant="link"
+                onClick={() => {
+                  setCompactStep1(!compactStep1);
+                }}
+              >
+                <FontAwesomeIcon color="white" size="lg" icon={compactStep1 ? faAngleDown : faAngleUp} />
+              </Button>
+            </OverlayTrigger>
+          </Col>
         </Row>
-      </Col>
-      <Col>
-        <LoadSampleChanger setContainerPosition={setContainerPosition} proposalName={proposalName} dewars={processingDewars}></LoadSampleChanger>
-      </Col>
-    </Row>
+      </Card.Header>
+      {!compactStep1 && (
+        <Card.Body style={{ padding: 0 }}>
+          <BootstrapTable
+            bootstrap4
+            wrapperClasses="table-responsive"
+            keyField="Id"
+            data={shipments.sort(sortShipments)}
+            columns={columns}
+            rowClasses={(row: Shipment) => {
+              return shipmentIsProcessing(row) ? 'processing' : '';
+            }}
+            condensed
+            striped
+            pagination={paginationFactory({ sizePerPage: 20, showTotal: true, hideSizePerPage: true, hidePageListOnlyOnePage: true })}
+            filter={filterFactory()}
+          />
+        </Card.Body>
+      )}
+    </Card>
   );
+
+  const step2 = <LoadSampleChanger setContainerLocation={setContainerLocation} proposalName={proposalName} dewars={processingDewars}></LoadSampleChanger>;
+
+  if (compactStep1) {
+    return (
+      <Page selected="prepare">
+        <Col>
+          <Row>
+            <Col>{step1}</Col>
+          </Row>
+          <Row>
+            <Col>{step2}</Col>
+          </Row>
+        </Col>
+      </Page>
+    );
+  } else {
+    return (
+      <Page selected="prepare">
+        <Row>
+          <Col md={'auto'}>
+            <Row>
+              <div style={{ maxWidth: 450 }}>{step1}</div>
+            </Row>
+          </Col>
+          <Col>{step2}</Col>
+        </Row>
+      </Page>
+    );
+  }
 }
 
 const dateFormatter = (cell: string) => {

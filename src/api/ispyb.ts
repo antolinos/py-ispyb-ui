@@ -13,16 +13,20 @@ export function getLogin(site: Site) {
   return `${server}/authenticate?site=${site}`;
 }
 
-export function getSessions({ startDate, endDate }: { startDate?: string; endDate?: string }) {
-  if (startDate && endDate) {
-    return { url: `${server}/${token}/proposal/session/date/${startDate}/${endDate}/list` };
-  }
-
+export function getSessions() {
   return { url: `${server}/${token}/session/list` };
+}
+
+export function getSessionsManagerDates(startDate: string, endDate: string) {
+  return { url: `${server}/${token}/proposal/session/date/${startDate}/${endDate}/list` };
 }
 
 export function getProposalSessions(proposalName: string) {
   return { url: `${server}/${token}/proposal/${proposalName}/session/list` };
+}
+
+export function getProposalSessionsWhithDates(proposalName: string, startDate: string, endDate: string) {
+  return { url: `${server}/${token}/proposal/${proposalName}/session/date/${startDate}/${endDate}/list` };
 }
 
 export function getProposal(proposalName?: string) {
@@ -113,6 +117,13 @@ export function getJpegchooch({ energyscanId, proposalName }: { proposalName: st
 export function getJpegxrfscan({ proposalName, xfeFluorescenceSpectrumId }: { proposalName: string; xfeFluorescenceSpectrumId: number }) {
   return { url: `${server}/${token}/proposal/${proposalName}/mx/xrfscan/xrfscanId/${xfeFluorescenceSpectrumId}/image/jpegScanFileFullPath/get` };
 }
+export function getMXDataCollectionSummary({ sessionId, proposalName, format }: { proposalName: string; sessionId: string; format: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/datacollection/session/${sessionId}/report/${format}` };
+}
+export function getMXDataCollectionAnalysis({ sessionId, proposalName, format }: { proposalName: string; sessionId: string; format: string }) {
+  return { url: `${server}/${token}/proposal/${proposalName}/mx/datacollection/session/${sessionId}/analysisreport/${format}` };
+}
+
 export function getWorkflowImage({ stepId, proposalName }: { proposalName: string; stepId: string }) {
   return { url: `${server}/${token}/proposal/${proposalName}/mx/workflow/step/${stepId}/image` };
 }
@@ -123,4 +134,11 @@ export function getDewars({ proposalName }: { proposalName: string }) {
 
 export function updateShippingStatus({ proposalName, shippingId, status }: { proposalName: string; shippingId: number; status: string }) {
   return { url: `${server}/${token}/proposal/${proposalName}/shipping/${shippingId}/status/${status}/update` };
+}
+
+export function updateSampleChangerLocation({ proposalName, containerId, beamline, position }: { proposalName: string; containerId: number; beamline: string; position?: string }) {
+  return {
+    url: `${server}/${token}/proposal/${proposalName}/container/${containerId}/beamline/${beamline}/samplechangerlocation/update`,
+    data: `sampleChangerLocation=${position}`,
+  };
 }
