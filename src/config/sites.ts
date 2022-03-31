@@ -108,7 +108,7 @@ const sites: Site[] = [
         beamlines: [
           {
             name: 'BioMAX',
-            //sampleChangerType: "ISARA",
+            sampleChangerType: 'ISARA',
           },
         ],
       },
