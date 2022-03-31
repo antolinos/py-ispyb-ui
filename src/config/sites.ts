@@ -104,7 +104,7 @@ const sites: Site[] = [
     },
 
     techniques: {
-      EM: {
+      MX: {
         beamlines: [
           {
             name: 'BioMAX',
