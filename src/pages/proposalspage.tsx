@@ -9,8 +9,8 @@ export default function ProposalsPage() {
   if (!data) throw Error('error while fetching proposals');
 
   return (
-    <Page>
-      <ProposalTable data={data}></ProposalTable>
+    <Page selected="myproposals">
+      <ProposalTable variant="sessions" data={data}></ProposalTable>
     </Page>
   );
 }
